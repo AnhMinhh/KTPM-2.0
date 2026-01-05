@@ -1,4 +1,6 @@
-# Logs
+############################
+# LOGS
+############################
 logs
 *.log
 npm-debug.log*
@@ -7,18 +9,41 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+############################
+# NODE / FRONTEND
+############################
+node_modules/
+dist/
+dist-ssr/
 *.local
 
-# Editor directories and files
+############################
+# .NET / ASP.NET / BLAZOR
+############################
+bin/
+obj/
+.vs/
+
+*.dll
+*.exe
+*.pdb
+*.deps.json
+*.runtimeconfig.json
+
+############################
+# VISUAL STUDIO
+############################
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+############################
+# OS / EDITOR
+############################
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
+Thumbs.db
 *.sw?
