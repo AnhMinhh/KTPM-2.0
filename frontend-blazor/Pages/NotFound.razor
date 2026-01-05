@@ -1,0 +1,25 @@
+@page "/404"
+@page "/not-found"
+
+<PageTitle>Page Not Found - ElectroHub</PageTitle>
+
+<div class="min-h-screen flex items-center justify-center px-4 py-24">
+    <div class="text-center">
+        <h1 class="text-9xl font-bold text-primary mb-4">404</h1>
+        <h2 class="text-3xl font-bold mb-4">Page Not Found</h2>
+        <p class="text-muted-foreground mb-8 max-w-md mx-auto">
+            Sorry, we couldn't find the page you're looking for. It might have been moved or deleted.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/" class="btn btn-primary btn-lg rounded-xl">
+                Go Home
+            </a>
+            <a href="/search" class="btn btn-outline btn-lg rounded-xl">
+                Search Products
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+}

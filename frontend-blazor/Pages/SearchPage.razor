@@ -1,0 +1,153 @@
+@page "/search"
+@using NeonGadgetStore.Web.Models
+@using NeonGadgetStore.Web.Services
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+
+<PageTitle>Search - ElectroHub</PageTitle>
+
+<div class="min-h-screen pt-24 pb-20">
+    <div class="container mx-auto px-4">
+        <!-- Search Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">Search Products</h1>
+            <div class="relative max-w-2xl">
+                <input type="text" 
+                       @bind="searchQuery"
+                       @bind:event="oninput"
+                       @onkeyup="HandleSearch"
+                       placeholder="Search for products..." 
+                       class="form-input w-full pl-12 pr-4 py-4 text-lg rounded-2xl bg-card border border-border" />
+                <svg class="w-6 h-6 absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            <p class="text-muted-foreground mb-6">
+                @if (filteredProducts.Any())
+                {
+                    <span>Found @filteredProducts.Count results for "<span class="font-medium text-foreground">@searchQuery</span>"</span>
+                }
+                else
+                {
+                    <span>No results found for "<span class="font-medium text-foreground">@searchQuery</span>"</span>
+                }
+            </p>
+        }
+
+        @if (filteredProducts.Any())
+        {
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                @foreach (var product in filteredProducts)
+                {
+                    <ProductCard Product="product" />
+                }
+            </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            <div class="text-center py-20">
+                <svg class="w-32 h-32 mx-auto text-muted-foreground/30 mb-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <h2 class="text-2xl font-semibold mb-4">No products found</h2>
+                <p class="text-muted-foreground mb-8">Try searching with different keywords</p>
+            </div>
+        }
+        else
+        {
+            <!-- Popular Categories -->
+            <div class="mt-12">
+                <h2 class="text-2xl font-bold mb-6">Popular Categories</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    @foreach (var category in _categories)
+                    {
+                        <a href="/category/@category.Id" 
+                           class="flex flex-col items-center p-6 bg-card rounded-2xl border border-border hover:border-primary/50 hover:shadow-lg transition-all">
+                            <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                                <span class="text-2xl">@GetCategoryIcon(category.Id)</span>
+                            </div>
+                            <span class="font-medium">@category.Name</span>
+                        </a>
+                    }
+                </div>
+            </div>
+
+            <!-- Trending Products -->
+            <div class="mt-12">
+                <h2 class="text-2xl font-bold mb-6">Trending Products</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                    @foreach (var product in _trendingProducts.Take(8))
+                    {
+                        <ProductCard Product="product" />
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<Footer />
+
+@code {
+    private string searchQuery = "";
+    private List<Product> filteredProducts = new();
+    private List<Category> _categories = new();
+    private List<Product> _trendingProducts = new();
+    private bool _isSearching = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load categories and trending products from API
+        _categories = await ApiService.GetCategoriesAsync();
+        _trendingProducts = await ApiService.GetFeaturedProductsAsync();
+
+        var uri = new Uri(Navigation.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        var q = query["q"];
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            searchQuery = q;
+            await PerformSearchAsync();
+        }
+    }
+
+    private async Task HandleSearch(KeyboardEventArgs e)
+    {
+        await PerformSearchAsync();
+    }
+
+    private async Task PerformSearchAsync()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            filteredProducts = new List<Product>();
+            return;
+        }
+
+        _isSearching = true;
+        StateHasChanged();
+
+        // Search via API only
+        filteredProducts = await ApiService.SearchProductsAsync(searchQuery);
+
+        _isSearching = false;
+        StateHasChanged();
+    }
+
+    private string GetCategoryIcon(string categoryId)
+    {
+        return categoryId switch
+        {
+            "phones" => "📱",
+            "laptops" => "💻",
+            "audio" => "🎧",
+            "gaming" => "🎮",
+            "accessories" => "⌚",
+            _ => "📦"
+        };
+    }
+}

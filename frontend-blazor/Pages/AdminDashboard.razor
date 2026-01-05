@@ -1,0 +1,215 @@
+@page "/admin"
+@using NeonGadgetStore.Web.Services
+@using NeonGadgetStore.Web.Models
+@inject AuthStateService AuthService
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+
+<PageTitle>Admin Dashboard - ElectroHub</PageTitle>
+
+<div class="min-h-screen pt-24 pb-20">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl md:text-4xl font-bold mb-8">Admin Dashboard</h1>
+
+        <!-- Stats Cards -->
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-card rounded-2xl border border-border p-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-muted-foreground">Total Revenue</p>
+                        <p class="text-2xl font-bold">$124,563</p>
+                    </div>
+                </div>
+                <p class="text-xs text-green-500 mt-4">+12.5% from last month</p>
+            </div>
+
+            <div class="bg-card rounded-2xl border border-border p-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-muted-foreground">Total Orders</p>
+                        <p class="text-2xl font-bold">1,234</p>
+                    </div>
+                </div>
+                <p class="text-xs text-green-500 mt-4">+8.2% from last month</p>
+            </div>
+
+            <div class="bg-card rounded-2xl border border-border p-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-muted-foreground">Products</p>
+                        <p class="text-2xl font-bold">@_productsCount</p>
+                    </div>
+                </div>
+                <p class="text-xs text-muted-foreground mt-4">Across @_categoriesCount categories</p>
+            </div>
+
+            <div class="bg-card rounded-2xl border border-border p-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-muted-foreground">Customers</p>
+                        <p class="text-2xl font-bold">5,678</p>
+                    </div>
+                </div>
+                <p class="text-xs text-green-500 mt-4">+15.3% from last month</p>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Recent Orders -->
+            <div class="lg:col-span-2">
+                <div class="bg-card rounded-2xl border border-border p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold">Recent Orders</h2>
+                        <a href="/admin/orders" class="text-sm text-primary hover:underline">View All</a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-border">
+                                    <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Order ID</th>
+                                    <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Customer</th>
+                                    <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
+                                    <th class="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in recentOrders)
+                                {
+                                    <tr class="border-b border-border last:border-0">
+                                        <td class="py-3 px-4 font-mono text-sm">#@order.Id</td>
+                                        <td class="py-3 px-4 text-sm">@order.CustomerName</td>
+                                        <td class="py-3 px-4">
+                                            <span class="@GetStatusClass(order.Status) px-2 py-1 rounded-full text-xs font-medium">
+                                                @order.Status
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right font-medium">$@order.Total.ToString("0.00")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-card rounded-2xl border border-border p-6">
+                    <h2 class="text-xl font-bold mb-6">Quick Actions</h2>
+                    <div class="space-y-3">
+                        <button class="btn btn-primary w-full rounded-xl justify-start gap-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Add New Product
+                        </button>
+                        <button class="btn btn-outline w-full rounded-xl justify-start gap-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                            View All Orders
+                        </button>
+                        <button class="btn btn-outline w-full rounded-xl justify-start gap-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Manage Customers
+                        </button>
+                        <button class="btn btn-outline w-full rounded-xl justify-start gap-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            View Analytics
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Top Products -->
+                <div class="bg-card rounded-2xl border border-border p-6">
+                    <h2 class="text-xl font-bold mb-6">Top Products</h2>
+                    <div class="space-y-4">
+                        @foreach (var product in _topProducts)
+                        {
+                            <div class="flex items-center gap-4">
+                                <img src="@product.Image" alt="@product.Name" class="w-12 h-12 object-cover rounded-lg" />
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-medium text-sm line-clamp-1">@product.Name</p>
+                                    <p class="text-xs text-muted-foreground">@product.Reviews sold</p>
+                                </div>
+                                <span class="font-bold text-primary">$@product.Price.ToString("0.00")</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<Footer />
+
+@code {
+    private int _productsCount = 0;
+    private int _categoriesCount = 0;
+    private List<Product> _topProducts = new();
+
+    private class RecentOrder
+    {
+        public string Id { get; set; } = "";
+        public string CustomerName { get; set; } = "";
+        public string Status { get; set; } = "";
+        public decimal Total { get; set; }
+    }
+
+    private List<RecentOrder> recentOrders = new()
+    {
+        new RecentOrder { Id = "ORD-2024005", CustomerName = "John Smith", Status = "Processing", Total = 1299.00m },
+        new RecentOrder { Id = "ORD-2024004", CustomerName = "Sarah Johnson", Status = "Shipped", Total = 549.00m },
+        new RecentOrder { Id = "ORD-2024003", CustomerName = "Mike Brown", Status = "Delivered", Total = 2499.00m },
+        new RecentOrder { Id = "ORD-2024002", CustomerName = "Emily Davis", Status = "In Transit", Total = 899.00m },
+        new RecentOrder { Id = "ORD-2024001", CustomerName = "Chris Wilson", Status = "Delivered", Total = 349.00m }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var products = await ApiService.GetProductsAsync();
+        var categories = await ApiService.GetCategoriesAsync();
+        
+        _productsCount = products.Count;
+        _categoriesCount = categories.Count;
+        _topProducts = products.Where(p => p.Featured).Take(5).ToList();
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Delivered" => "bg-green-500/10 text-green-500",
+            "In Transit" => "bg-blue-500/10 text-blue-500",
+            "Shipped" => "bg-purple-500/10 text-purple-500",
+            "Processing" => "bg-yellow-500/10 text-yellow-500",
+            "Cancelled" => "bg-red-500/10 text-red-500",
+            _ => "bg-secondary text-muted-foreground"
+        };
+    }
+}

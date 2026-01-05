@@ -87,21 +87,14 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseCors();
-}
+// Enable CORS for frontend at port 5021
+app.UseCors();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "ok" }));
-
-app.UseDefaultFiles();
-app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapFallbackToFile("index.html");
 
 app.Run();

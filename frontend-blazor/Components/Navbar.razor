@@ -1,0 +1,276 @@
+@using NeonGadgetStore.Web.Services
+@inject NavigationManager Navigation
+@inject CartService CartService
+@inject AuthStateService AuthState
+@inject ApiService ApiService
+@implements IDisposable
+
+<header class="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
+    <nav class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16 md:h-20">
+            <!-- Logo -->
+            <a href="/" class="flex items-center gap-2" @onclick="NavigateHome" @onclick:preventDefault>
+                <div class="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-lg">
+                    <span class="text-primary-foreground font-bold text-xl">E</span>
+                </div>
+                <span class="font-bold text-xl hidden sm:block">ElectroHub</span>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <div class="hidden lg:flex items-center gap-8">
+                <a href="/" class="text-muted-foreground hover:text-foreground transition-colors font-medium">
+                    Home
+                </a>
+                
+                <!-- Categories Dropdown -->
+                <div class="relative" @onmouseenter="() => _isCategoriesOpen = true" @onmouseleave="() => _isCategoriesOpen = false">
+                    <button class="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors font-medium">
+                        Categories
+                        <svg class="@GetChevronClass()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    
+                    @if (_isCategoriesOpen)
+                    {
+                        <div class="absolute top-full left-0 pt-2">
+                            <div class="bg-card rounded-xl shadow-card border border-border p-2 min-w-[200px] animate-fade-up">
+                                @foreach (var category in _categories)
+                                {
+                                    <a href="/category/@category.Id" 
+                                       class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary transition-colors">
+                                        <span class="text-lg">@category.Icon</span>
+                                        <span class="font-medium">@category.Name</span>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <a href="/category/phones" class="text-muted-foreground hover:text-foreground transition-colors font-medium">
+                    Deals
+                </a>
+            </div>
+
+            <!-- Search Bar -->
+            <form @onsubmit="HandleSearch" @onsubmit:preventDefault class="hidden md:flex relative flex-1 max-w-md mx-8">
+                <div class="relative w-full">
+                    <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input type="text" 
+                           placeholder="Search products..." 
+                           @bind="_searchQuery"
+                           @onfocus="() => _showSearchResults = true"
+                           @onblur="HideSearchResults"
+                           class="w-full h-11 pl-12 pr-4 rounded-xl bg-secondary border-0 focus:ring-2 focus:ring-primary outline-none transition-all" />
+                </div>
+                
+                @if (_showSearchResults && _searchResults.Any())
+                {
+                    <div class="absolute top-full left-0 right-0 mt-2 bg-card rounded-xl shadow-card border border-border overflow-hidden animate-fade-up z-50">
+                        @foreach (var product in _searchResults)
+                        {
+                            <a href="/product/@product.Id" 
+                               class="flex items-center gap-4 p-3 hover:bg-secondary transition-colors">
+                                <img src="@product.Image" alt="@product.Name" class="w-12 h-12 object-cover rounded-lg" />
+                                <div>
+                                    <p class="font-medium text-sm">@product.Name</p>
+                                    <p class="text-primary font-semibold">$@product.Price</p>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                }
+            </form>
+
+            <!-- Right Actions -->
+            <div class="flex items-center gap-2">
+                @if (AuthState.IsAuthenticated)
+                {
+                    <a href="/wishlist" class="hidden md:flex btn btn-ghost btn-icon rounded-full">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                    </a>
+                    <a href="/recently-viewed" class="hidden md:flex btn btn-ghost btn-icon rounded-full">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </a>
+                }
+
+                <!-- Cart Button -->
+                <button @onclick="() => CartService.SetCartOpen(true)" class="btn btn-ghost btn-icon rounded-full relative">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    @if (CartService.TotalItems > 0)
+                    {
+                        <span class="absolute -top-1 -right-1 w-5 h-5 rounded-full gradient-accent text-xs text-accent-foreground flex items-center justify-center font-semibold">
+                            @CartService.TotalItems
+                        </span>
+                    }
+                </button>
+
+                @if (AuthState.IsAuthenticated)
+                {
+                    <!-- User Menu -->
+                    <div class="relative">
+                        <button @onclick="() => _isUserMenuOpen = !_isUserMenuOpen" class="btn btn-ghost btn-icon rounded-full">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </button>
+                        
+                        @if (_isUserMenuOpen)
+                        {
+                            <div class="absolute right-0 top-full mt-2 w-48 bg-card rounded-xl shadow-card border border-border p-2 animate-fade-up z-50">
+                                <a href="/profile" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-secondary transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    Profile
+                                </a>
+                                <a href="/orders" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-secondary transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                    Orders
+                                </a>
+                                @if (AuthState.IsAdmin)
+                                {
+                                    <a href="/admin" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-secondary transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        Admin
+                                    </a>
+                                }
+                                <hr class="my-2 border-border" />
+                                <button @onclick="HandleSignOut" class="w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-secondary transition-colors text-left">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg>
+                                    Sign Out
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <a href="/auth" class="btn btn-primary btn-md rounded-xl">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                        </svg>
+                        Sign In
+                    </a>
+                }
+
+                <!-- Mobile Menu Button -->
+                <button @onclick="() => _isMenuOpen = !_isMenuOpen" class="lg:hidden btn btn-ghost btn-icon rounded-full">
+                    @if (_isMenuOpen)
+                    {
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    }
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        @if (_isMenuOpen)
+        {
+            <div class="lg:hidden py-4 border-t border-border animate-fade-up">
+                <div class="flex flex-col gap-4">
+                    <a href="/" class="text-foreground font-medium py-2">Home</a>
+                    @foreach (var category in _categories)
+                    {
+                        <a href="/category/@category.Id" class="text-muted-foreground font-medium py-2 flex items-center gap-2">
+                            <span>@category.Icon</span>
+                            @category.Name
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    </nav>
+</header>
+
+@code {
+    private bool _isMenuOpen;
+    private bool _isCategoriesOpen;
+    private bool _isUserMenuOpen;
+    private bool _showSearchResults;
+    private string _searchQuery = string.Empty;
+    private List<Models.Product> _searchResults = new();
+    private List<Models.Category> _categories = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CartService.OnChange += StateHasChanged;
+        AuthState.OnChange += StateHasChanged;
+        _categories = await ApiService.GetCategoriesAsync();
+    }
+
+    private void HandleSearch()
+    {
+        if (!string.IsNullOrWhiteSpace(_searchQuery))
+        {
+            Navigation.NavigateTo($"/search?q={Uri.EscapeDataString(_searchQuery)}");
+            _showSearchResults = false;
+            _searchQuery = string.Empty;
+        }
+    }
+
+    private async Task UpdateSearchResults()
+    {
+        if (_searchQuery.Length > 2)
+        {
+            _searchResults = (await ApiService.SearchProductsAsync(_searchQuery)).Take(5).ToList();
+        }
+        else
+        {
+            _searchResults.Clear();
+        }
+    }
+
+    private async Task HideSearchResults()
+    {
+        await Task.Delay(200);
+        _showSearchResults = false;
+    }
+
+    private async Task HandleSignOut()
+    {
+        await AuthState.ClearAsync();
+        _isUserMenuOpen = false;
+        Navigation.NavigateTo("/");
+    }
+
+    private void NavigateHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private string GetChevronClass()
+    {
+        return _isCategoriesOpen ? "w-4 h-4 transition-transform rotate-180" : "w-4 h-4 transition-transform";
+    }
+
+    public void Dispose()
+    {
+        CartService.OnChange -= StateHasChanged;
+        AuthState.OnChange -= StateHasChanged;
+    }
+}

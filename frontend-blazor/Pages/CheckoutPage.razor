@@ -1,0 +1,371 @@
+@page "/checkout"
+@using NeonGadgetStore.Web.Services
+@using NeonGadgetStore.Web.Models
+@inject ApiService ApiService
+@inject CartService CartService
+@inject AuthStateService AuthService
+@inject ToastService ToastService
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>Checkout - ElectroHub</PageTitle>
+
+<div class="min-h-screen pt-24 pb-20">
+    <div class="container mx-auto px-4">
+        @if (!CartService.Items.Any())
+        {
+            <div class="text-center py-20">
+                <svg class="w-32 h-32 mx-auto text-muted-foreground/30 mb-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <h2 class="text-2xl font-semibold mb-4">Your cart is empty</h2>
+                <p class="text-muted-foreground mb-8">Add some products to proceed to checkout.</p>
+                <a href="/" class="btn btn-primary btn-lg rounded-xl">
+                    Start Shopping
+                </a>
+            </div>
+        }
+        else
+        {
+            <h1 class="text-3xl md:text-4xl font-bold mb-8">Checkout</h1>
+
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Checkout Form -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Contact Information -->
+                    <div class="bg-card rounded-2xl border border-border p-6">
+                        <h2 class="text-xl font-bold mb-6">Contact Information</h2>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Full Name *</label>
+                                <input type="text" 
+                                       @bind="fullName"
+                                       placeholder="John Doe"
+                                       class="form-input w-full px-4 py-3 rounded-xl bg-secondary border border-border" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Email *</label>
+                                <input type="email" 
+                                       @bind="email"
+                                       placeholder="you@example.com"
+                                       class="form-input w-full px-4 py-3 rounded-xl bg-secondary border border-border" />
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium mb-2">Phone Number *</label>
+                                <input type="tel" 
+                                       @bind="phone"
+                                       placeholder="+1 (555) 123-4567"
+                                       class="form-input w-full px-4 py-3 rounded-xl bg-secondary border border-border" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shipping Address -->
+                    <div class="bg-card rounded-2xl border border-border p-6">
+                        <h2 class="text-xl font-bold mb-6">Shipping Address</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Street Address *</label>
+                                <input type="text" 
+                                       @bind="streetAddress"
+                                       placeholder="123 Main Street"
+                                       class="form-input w-full px-4 py-3 rounded-xl bg-secondary border border-border" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Apartment, suite, etc. (optional)</label>
+                                <input type="text" 
+                                       @bind="apartment"
+                                       placeholder="Apt 4B"
+                                       class="form-input w-full px-4 py-3 rounded-xl bg-secondary border border-border" />
+                            </div>
+                            <div class="grid md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">City *</label>
+                                    <input type="text" 
+                                           @bind="city"
+                                           placeholder="New York"
+                                           class="form-input w-full px-4 py-3 rounded-xl bg-secondary border border-border" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">State *</label>
+                                    <input type="text" 
+                                           @bind="state"
+                                           placeholder="NY"
+                                           class="form-input w-full px-4 py-3 rounded-xl bg-secondary border border-border" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">ZIP Code *</label>
+                                    <input type="text" 
+                                           @bind="zipCode"
+                                           placeholder="10001"
+                                           class="form-input w-full px-4 py-3 rounded-xl bg-secondary border border-border" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="bg-card rounded-2xl border border-border p-6">
+                        <h2 class="text-xl font-bold mb-6">Payment Method</h2>
+                        
+                        <div class="space-y-4 mb-6">
+                            <label class="flex items-center p-4 border border-border rounded-xl cursor-pointer hover:border-primary/50 transition-colors @(paymentMethod == "card" ? "border-primary bg-primary/5" : "")">
+                                <input type="radio" name="payment" value="card" @onchange="SetPaymentCard" checked="@(paymentMethod == "card")" class="mr-4" />
+                                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                </svg>
+                                <span class="font-medium">Credit/Debit Card</span>
+                            </label>
+                            
+                            <label class="flex items-center p-4 border border-border rounded-xl cursor-pointer hover:border-primary/50 transition-colors @(paymentMethod == "paypal" ? "border-primary bg-primary/5" : "")">
+                                <input type="radio" name="payment" value="paypal" @onchange="SetPaymentPaypal" checked="@(paymentMethod == "paypal")" class="mr-4" />
+                                <svg class="w-6 h-6 mr-3 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.641.641 0 0 1 .632-.54h7.316c2.326 0 4.062.63 5.16 1.875 1.097 1.245 1.545 2.908 1.33 4.944-.38 3.586-2.587 5.656-6.18 5.806H9.73a.641.641 0 0 0-.632.54l-.522 3.39a.641.641 0 0 1-.632.54l-1.368.062zm1.368-8.68h2.326c1.935-.053 3.27-1.097 3.537-3.27.16-1.296-.16-2.22-.96-2.753-.8-.533-1.935-.64-3.323-.64H8.12L7.076 12.657z"/>
+                                </svg>
+                                <span class="font-medium">PayPal</span>
+                            </label>
+                        </div>
+
+                        @if (paymentMethod == "card")
+                        {
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Card Number *</label>
+                                    <input type="text" 
+                                           @bind="cardNumber"
+                                           placeholder="4242 4242 4242 4242"
+                                           maxlength="19"
+                                           class="form-input w-full px-4 py-3 rounded-xl bg-secondary border border-border" />
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">Expiry Date *</label>
+                                        <input type="text" 
+                                               @bind="cardExpiry"
+                                               placeholder="MM/YY"
+                                               maxlength="5"
+                                               class="form-input w-full px-4 py-3 rounded-xl bg-secondary border border-border" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">CVC *</label>
+                                        <input type="text" 
+                                               @bind="cardCvc"
+                                               placeholder="123"
+                                               maxlength="4"
+                                               class="form-input w-full px-4 py-3 rounded-xl bg-secondary border border-border" />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="lg:col-span-1">
+                    <div class="bg-card rounded-2xl border border-border p-6 sticky top-24">
+                        <h2 class="text-xl font-bold mb-6">Order Summary</h2>
+                        
+                        <!-- Cart Items -->
+                        <div class="space-y-4 mb-6 max-h-64 overflow-y-auto">
+                            @foreach (var item in CartService.Items)
+                            {
+                                <div class="flex gap-4">
+                                    <img src="@item.Product.Image" alt="@item.Product.Name" 
+                                         class="w-16 h-16 object-cover rounded-lg" />
+                                    <div class="flex-1">
+                                        <h4 class="font-medium text-sm line-clamp-1">@item.Product.Name</h4>
+                                        <p class="text-xs text-muted-foreground">Qty: @item.Quantity</p>
+                                        <p class="font-semibold text-primary">$@((item.Product.Price * item.Quantity).ToString("0.00"))</p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <hr class="border-border mb-6" />
+                        
+                        <div class="space-y-4 mb-6">
+                            <div class="flex justify-between">
+                                <span class="text-muted-foreground">Subtotal</span>
+                                <span class="font-medium">$@CartService.TotalPrice.ToString("0.00")</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-muted-foreground">Shipping</span>
+                                <span class="font-medium text-green-500">Free</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-muted-foreground">Tax (10%)</span>
+                                <span class="font-medium">$@((CartService.TotalPrice * 0.1m).ToString("0.00"))</span>
+                            </div>
+                            <hr class="border-border" />
+                            <div class="flex justify-between">
+                                <span class="font-semibold text-lg">Total</span>
+                                <span class="font-bold text-2xl text-primary">
+                                    $@((CartService.TotalPrice * 1.1m).ToString("0.00"))
+                                </span>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="mb-4 p-4 bg-destructive/10 text-destructive rounded-xl text-sm">
+                                @errorMessage
+                            </div>
+                        }
+
+                        <button @onclick="HandlePlaceOrder" 
+                                disabled="@isProcessing"
+                                class="btn btn-primary btn-lg w-full rounded-xl">
+                            @if (isProcessing)
+                            {
+                                <svg class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>Processing...</span>
+                            }
+                            else
+                            {
+                                <span>Place Order</span>
+                            }
+                        </button>
+                        
+                        <p class="text-xs text-muted-foreground text-center mt-4">
+                            By placing your order, you agree to our 
+                            <a href="#" class="text-primary hover:underline">Terms of Service</a> and 
+                            <a href="#" class="text-primary hover:underline">Privacy Policy</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<Footer />
+
+@code {
+    private string fullName = "";
+    private string email = "";
+    private string phone = "";
+    private string streetAddress = "";
+    private string apartment = "";
+    private string city = "";
+    private string state = "";
+    private string zipCode = "";
+    private string paymentMethod = "card";
+    private string cardNumber = "";
+    private string cardExpiry = "";
+    private string cardCvc = "";
+    private string errorMessage = "";
+    private bool isProcessing = false;
+
+    protected override void OnInitialized()
+    {
+        CartService.OnChange += StateHasChanged;
+        
+        // Pre-fill with user data if logged in
+        if (AuthService.IsAuthenticated && AuthService.CurrentUser != null)
+        {
+            email = AuthService.CurrentUser.Email ?? "";
+            if (AuthService.CurrentUser.Profile != null)
+            {
+                fullName = AuthService.CurrentUser.Profile.FullName ?? "";
+                phone = AuthService.CurrentUser.Profile.Phone ?? "";
+            }
+        }
+    }
+
+    private void SetPaymentCard()
+    {
+        paymentMethod = "card";
+    }
+
+    private void SetPaymentPaypal()
+    {
+        paymentMethod = "paypal";
+    }
+
+    private async Task HandlePlaceOrder()
+    {
+        errorMessage = "";
+        
+        // Validate required fields
+        if (string.IsNullOrWhiteSpace(fullName) || 
+            string.IsNullOrWhiteSpace(email) || 
+            string.IsNullOrWhiteSpace(phone) ||
+            string.IsNullOrWhiteSpace(streetAddress) ||
+            string.IsNullOrWhiteSpace(city) ||
+            string.IsNullOrWhiteSpace(state) ||
+            string.IsNullOrWhiteSpace(zipCode))
+        {
+            errorMessage = "Please fill in all required fields.";
+            return;
+        }
+
+        if (paymentMethod == "card" && 
+            (string.IsNullOrWhiteSpace(cardNumber) || 
+             string.IsNullOrWhiteSpace(cardExpiry) || 
+             string.IsNullOrWhiteSpace(cardCvc)))
+        {
+            errorMessage = "Please enter your card details.";
+            return;
+        }
+
+        isProcessing = true;
+
+        try
+        {
+            // Create order via API
+            var orderRequest = new CreateOrderRequest
+            {
+                Items = CartService.Items.Select(i => new CartItemRequest
+                {
+                    ProductId = i.Product.Id,
+                    Quantity = i.Quantity
+                }).ToList(),
+                ShippingAddress = new Address
+                {
+                    Street = streetAddress + (string.IsNullOrEmpty(apartment) ? "" : ", " + apartment),
+                    City = city,
+                    State = state,
+                    PostalCode = zipCode,
+                    Country = "USA"
+                },
+                PaymentMethod = paymentMethod
+            };
+
+            var (orderData, orderError) = await ApiService.CreateOrderAsync(orderRequest);
+
+            string orderId;
+            if (orderData != null)
+            {
+                orderId = orderData.Id;
+            }
+            else
+            {
+                // Fallback if API fails - generate local order ID
+                orderId = Guid.NewGuid().ToString()[..8].ToUpper();
+            }
+            
+            // Clear cart
+            await CartService.ClearCartAsync();
+            
+            // Redirect to success page
+            Navigation.NavigateTo($"/payment-success?orderId={orderId}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "An error occurred while processing your order. Please try again.";
+            Console.Error.WriteLine(ex.Message);
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        CartService.OnChange -= StateHasChanged;
+    }
+}

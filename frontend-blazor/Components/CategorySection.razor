@@ -1,0 +1,114 @@
+@using NeonGadgetStore.Web.Models
+@using NeonGadgetStore.Web.Services
+@inject ApiService ApiService
+
+<section class="py-20">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4 animate-fade-up">
+                Shop by <span class="text-gradient-primary">Category</span>
+            </h2>
+            <p class="text-muted-foreground max-w-2xl mx-auto animate-fade-up stagger-1">
+                Browse our wide selection of premium electronics across all categories
+            </p>
+        </div>
+
+        @if (_isLoading)
+        {
+            <div class="text-center py-12">
+                <div class="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+                <p class="mt-4 text-muted-foreground">Loading categories...</p>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(_error))
+        {
+            <div class="text-center py-12 bg-destructive/10 rounded-2xl">
+                <svg class="w-16 h-16 mx-auto text-destructive mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <p class="text-destructive font-medium">@_error</p>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                @{ var index = 0; }
+                @foreach (var category in categories)
+                {
+                    var staggerClass = $"stagger-{(index % 5) + 1}";
+                    <a href="/category/@category.Id" 
+                       class="group relative bg-card rounded-2xl p-6 text-center transition-all duration-500 shadow-card hover:shadow-card-hover hover:-translate-y-2 animate-fade-up opacity-0 @staggerClass"
+                       style="animation-fill-mode: forwards;">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+                            @(category.Icon ?? GetDefaultIcon(category.Id))
+                        </div>
+                        <h3 class="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
+                            @category.Name
+                        </h3>
+                        <p class="text-sm text-muted-foreground">
+                            @GetProductCount(category.Id) Products
+                        </p>
+                        
+                        <!-- Hover Arrow -->
+                        <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                        </div>
+                    </a>
+                    index++;
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private List<Category> categories = new();
+    private List<Product> allProducts = new();
+    private bool _isLoading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _isLoading = true;
+        _error = null;
+        
+        try
+        {
+            categories = await ApiService.GetCategoriesAsync();
+            allProducts = await ApiService.GetProductsAsync();
+            
+            if (!categories.Any())
+            {
+                _error = "No categories available. Please check if the backend server is running.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load categories. Please ensure the backend server is running. Error: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private int GetProductCount(string categoryId)
+    {
+        return allProducts.Count(p => p.CategoryId == categoryId || p.Category == categoryId);
+    }
+
+    private string GetDefaultIcon(string categoryId)
+    {
+        return categoryId?.ToLower() switch
+        {
+            "phones" => "📱",
+            "laptops" => "💻",
+            "audio" => "🎧",
+            "gaming" => "🎮",
+            "accessories" => "⌚",
+            _ => "📦"
+        };
+    }
+}

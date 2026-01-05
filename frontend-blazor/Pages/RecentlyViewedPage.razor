@@ -1,0 +1,70 @@
+@page "/recently-viewed"
+@using NeonGadgetStore.Web.Models
+@using NeonGadgetStore.Web.Services
+@inject ApiService ApiService
+
+<PageTitle>Recently Viewed - ElectroHub</PageTitle>
+
+<div class="min-h-screen pt-24 pb-20">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold">Recently Viewed</h1>
+            @if (recentItems.Any())
+            {
+                <button @onclick="ClearHistory" class="text-sm text-muted-foreground hover:text-destructive transition-colors">
+                    Clear History
+                </button>
+            }
+        </div>
+
+        @if (!recentItems.Any())
+        {
+            <div class="text-center py-20">
+                <svg class="w-32 h-32 mx-auto text-muted-foreground/30 mb-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h2 class="text-2xl font-semibold mb-4">No recently viewed items</h2>
+                <p class="text-muted-foreground mb-8">Products you view will appear here.</p>
+                <a href="/" class="btn btn-primary btn-lg rounded-xl">
+                    Explore Products
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                @foreach (var product in recentItems)
+                {
+                    <ProductCard Product="product" />
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<Footer />
+
+@code {
+    private List<Product> recentItems = new();
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRecentlyViewedAsync();
+    }
+
+    private async Task LoadRecentlyViewedAsync()
+    {
+        _isLoading = true;
+        
+        // Load from API only (no fallback)
+        recentItems = await ApiService.GetRecentlyViewedAsync();
+        
+        _isLoading = false;
+    }
+
+    private void ClearHistory()
+    {
+        recentItems.Clear();
+    }
+}

@@ -1,0 +1,154 @@
+@page "/cart"
+@using NeonGadgetStore.Web.Services
+@inject CartService CartService
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>Shopping Cart - ElectroHub</PageTitle>
+
+<div class="min-h-screen pt-24 pb-20">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl md:text-4xl font-bold mb-8">Shopping Cart</h1>
+
+        @if (!CartService.Items.Any())
+        {
+            <div class="text-center py-20">
+                <svg class="w-32 h-32 mx-auto text-muted-foreground/30 mb-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <h2 class="text-2xl font-semibold mb-4">Your cart is empty</h2>
+                <p class="text-muted-foreground mb-8">Looks like you haven't added anything to your cart yet.</p>
+                <a href="/" class="btn btn-primary btn-lg rounded-xl">
+                    Start Shopping
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Cart Items -->
+                <div class="lg:col-span-2 space-y-4">
+                    @foreach (var item in CartService.Items)
+                    {
+                        <div class="flex gap-6 p-6 bg-card rounded-2xl border border-border">
+                            <img src="@item.Product.Image" alt="@item.Product.Name" 
+                                 class="w-24 h-24 md:w-32 md:h-32 object-cover rounded-xl" />
+                            <div class="flex-1">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <a href="/product/@item.Product.Id" class="font-semibold text-lg hover:text-primary transition-colors">
+                                            @item.Product.Name
+                                        </a>
+                                        <p class="text-sm text-muted-foreground capitalize">@item.Product.Category</p>
+                                    </div>
+                                    <button @onclick="() => RemoveItem(item.Product.Id)"
+                                            class="btn btn-ghost btn-icon text-muted-foreground hover:text-destructive">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                
+                                <div class="flex items-center justify-between mt-4">
+                                    <div class="flex items-center gap-2 bg-secondary rounded-lg p-1">
+                                        <button @onclick="() => UpdateQuantity(item.Product.Id, item.Quantity - 1)"
+                                                class="btn btn-ghost btn-sm btn-icon rounded">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                                            </svg>
+                                        </button>
+                                        <span class="w-8 text-center font-medium">@item.Quantity</span>
+                                        <button @onclick="() => UpdateQuantity(item.Product.Id, item.Quantity + 1)"
+                                                class="btn btn-ghost btn-sm btn-icon rounded">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <span class="text-xl font-bold text-primary">
+                                        $@((item.Product.Price * item.Quantity).ToString("0.00"))
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <button @onclick="ClearCart" class="text-sm text-muted-foreground hover:text-destructive transition-colors">
+                        Clear Cart
+                    </button>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="lg:col-span-1">
+                    <div class="bg-card rounded-2xl border border-border p-6 sticky top-24">
+                        <h2 class="text-xl font-bold mb-6">Order Summary</h2>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div class="flex justify-between">
+                                <span class="text-muted-foreground">Subtotal (@CartService.TotalItems items)</span>
+                                <span class="font-medium">$@CartService.TotalPrice.ToString("0.00")</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-muted-foreground">Shipping</span>
+                                <span class="font-medium text-green-500">Free</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-muted-foreground">Tax</span>
+                                <span class="font-medium">$@((CartService.TotalPrice * 0.1m).ToString("0.00"))</span>
+                            </div>
+                            <hr class="border-border" />
+                            <div class="flex justify-between">
+                                <span class="font-semibold text-lg">Total</span>
+                                <span class="font-bold text-2xl text-primary">
+                                    $@((CartService.TotalPrice * 1.1m).ToString("0.00"))
+                                </span>
+                            </div>
+                        </div>
+
+                        <button @onclick="GoToCheckout" class="btn btn-primary btn-lg w-full rounded-xl mb-4">
+                            Proceed to Checkout
+                        </button>
+                        
+                        <a href="/" class="btn btn-outline btn-lg w-full rounded-xl">
+                            Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<Footer />
+
+@code {
+    protected override void OnInitialized()
+    {
+        CartService.OnChange += StateHasChanged;
+    }
+
+    private async Task UpdateQuantity(string productId, int quantity)
+    {
+        await CartService.UpdateQuantityAsync(productId, quantity);
+    }
+
+    private async Task RemoveItem(string productId)
+    {
+        await CartService.RemoveFromCartAsync(productId);
+    }
+
+    private async Task ClearCart()
+    {
+        await CartService.ClearCartAsync();
+    }
+
+    private void GoToCheckout()
+    {
+        Navigation.NavigateTo("/checkout");
+    }
+
+    public void Dispose()
+    {
+        CartService.OnChange -= StateHasChanged;
+    }
+}

@@ -1,0 +1,114 @@
+@using NeonGadgetStore.Web.Models
+@using NeonGadgetStore.Web.Services
+@inject CartService CartService
+@inject NavigationManager Navigation
+
+<div class="@GetCardClass()" 
+     style="animation-fill-mode: forwards;"
+     @onmouseenter="() => _isHovered = true"
+     @onmouseleave="HandleMouseLeave">
+    
+    <!-- Discount Badge -->
+    @if (Discount > 0)
+    {
+        <div class="absolute top-4 left-4 z-10 px-3 py-1 rounded-full gradient-accent text-accent-foreground text-sm font-semibold">
+            -@Discount%
+        </div>
+    }
+
+    <!-- Product Image -->
+    <a href="/product/@Product.Id" class="block relative aspect-square overflow-hidden">
+        <img src="@Product.Image" alt="@Product.Name"
+             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        
+        <!-- Hover Overlay -->
+        <div class="@GetOverlayClass()">
+            <a href="/product/@Product.Id" class="btn btn-secondary btn-icon rounded-full shadow-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+            </a>
+            <button @onclick="HandleAddToCart" @onclick:stopPropagation class="btn btn-primary btn-icon rounded-full shadow-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+            </button>
+        </div>
+    </a>
+
+    <!-- Product Info -->
+    <div class="p-5">
+        <a href="/product/@Product.Id">
+            <h3 class="font-semibold text-lg mb-2 line-clamp-1 hover:text-primary transition-colors">
+                @Product.Name
+            </h3>
+        </a>
+        
+        <!-- Rating -->
+        <div class="flex items-center gap-2 mb-3">
+            <div class="flex items-center gap-1">
+                <svg class="w-4 h-4 fill-accent text-accent" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span class="text-sm font-medium">@Product.Rating.ToString("0.0")</span>
+            </div>
+            <span class="text-sm text-muted-foreground">(@Product.Reviews reviews)</span>
+        </div>
+
+        <!-- Price -->
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-xl font-bold text-primary">$@Product.Price</span>
+                @if (Product.OriginalPrice.HasValue)
+                {
+                    <span class="text-sm text-muted-foreground line-through">
+                        $@Product.OriginalPrice
+                    </span>
+                }
+            </div>
+            
+            <button @onclick="HandleAddToCart" 
+                    class="btn btn-ghost btn-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                Add
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Product Product { get; set; } = null!;
+    
+    [Parameter]
+    public int Index { get; set; } = 0;
+
+    private bool _isHovered = false;
+
+    private int Discount => Product.OriginalPrice.HasValue 
+        ? (int)Math.Round((1 - Product.Price / Product.OriginalPrice.Value) * 100)
+        : 0;
+
+    private string GetCardClass()
+    {
+        var staggerClass = $"stagger-{(Index % 5) + 1}";
+        return $"group relative bg-card rounded-2xl overflow-hidden transition-all duration-500 shadow-card hover:shadow-card-hover animate-fade-up opacity-0 {staggerClass}";
+    }
+
+    private string GetOverlayClass()
+    {
+        return _isHovered 
+            ? "absolute inset-0 bg-foreground/10 backdrop-blur-sm flex items-center justify-center gap-3 transition-opacity duration-300 opacity-100"
+            : "absolute inset-0 bg-foreground/10 backdrop-blur-sm flex items-center justify-center gap-3 transition-opacity duration-300 opacity-0";
+    }
+
+    private void HandleMouseLeave()
+    {
+        _isHovered = false;
+    }
+
+    private async Task HandleAddToCart()
+    {
+        await CartService.AddToCartAsync(Product);
+    }
+}

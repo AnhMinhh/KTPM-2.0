@@ -1,0 +1,14 @@
+﻿@using NeonGadgetStore.Web.Layout
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not Found</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <NeonGadgetStore.Web.Pages.NotFound />
+        </LayoutView>
+    </NotFound>
+</Router>

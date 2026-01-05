@@ -1,0 +1,153 @@
+is_global = true
+build_property.EnableAotAnalyzer = 
+build_property.EnableSingleFileAnalyzer = 
+build_property.EnableTrimAnalyzer = false
+build_property.IncludeAllContentForSelfExtract = 
+build_property.VerifyReferenceTrimCompatibility = 
+build_property.VerifyReferenceAotCompatibility = 
+build_property.TargetFramework = net10.0
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v10.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = false
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = browser
+build_property.RootNamespace = NeonGadgetStore.Web
+build_property.RootNamespace = NeonGadgetStore.Web
+build_property.ProjectDir = D:\Downloads\neon-gadget-store-main (1)\neon-gadget-store-main\frontend-blazor\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = false
+build_property.RazorLangVersion = 9.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = D:\Downloads\neon-gadget-store-main (1)\neon-gadget-store-main\frontend-blazor
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 10.0
+build_property.EnableCodeStyleSeverity = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/App.razor]
+build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Components/BackToTop.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xCYWNrVG9Ub3AucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Components/CartDrawer.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xDYXJ0RHJhd2VyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Components/CategorySection.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xDYXRlZ29yeVNlY3Rpb24ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Components/FeaturedProducts.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xGZWF0dXJlZFByb2R1Y3RzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Components/FloatingChatButton.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xGbG9hdGluZ0NoYXRCdXR0b24ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Components/Footer.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xGb290ZXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Components/HeroSection.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xIZXJvU2VjdGlvbi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Components/Navbar.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xOYXZiYXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Components/ProductCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQcm9kdWN0Q2FyZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Components/PromoSection.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQcm9tb1NlY3Rpb24ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Components/ThemeToggle.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xUaGVtZVRvZ2dsZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Components/ToastContainer.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xUb2FzdENvbnRhaW5lci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Pages/AdminDashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5EYXNoYm9hcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Pages/AuthPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXV0aFBhZ2UucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Pages/CartPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2FydFBhZ2UucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Pages/CategoryPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2F0ZWdvcnlQYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Pages/CheckoutPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2hlY2tvdXRQYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Pages/Home.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSG9tZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Pages/NotFound.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTm90Rm91bmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Pages/OrderDetailPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcT3JkZXJEZXRhaWxQYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Pages/OrdersPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcT3JkZXJzUGFnZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Pages/PaymentCancelPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGF5bWVudENhbmNlbFBhZ2UucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Pages/PaymentSuccessPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGF5bWVudFN1Y2Nlc3NQYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Pages/ProductPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJvZHVjdFBhZ2UucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Pages/ProfilePage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJvZmlsZVBhZ2UucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Pages/RecentlyViewedPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVjZW50bHlWaWV3ZWRQYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Pages/SearchPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VhcmNoUGFnZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/Pages/WishlistPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcV2lzaGxpc3RQYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Downloads/neon-gadget-store-main (1)/neon-gadget-store-main/frontend-blazor/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 

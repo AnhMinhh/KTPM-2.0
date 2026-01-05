@@ -1,0 +1,152 @@
+@page "/category/{CategoryId}"
+@using NeonGadgetStore.Web.Models
+@using NeonGadgetStore.Web.Services
+@using NeonGadgetStore.Web.Components
+@inject ApiService ApiService
+
+<PageTitle>@_category?.Name - ElectroHub</PageTitle>
+
+<div class="min-h-screen pt-24 pb-20">
+    <div class="container mx-auto px-4">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-sm text-muted-foreground mb-8">
+            <a href="/" class="hover:text-primary transition-colors">Home</a>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+            <span class="text-foreground">@_category?.Name</span>
+        </nav>
+
+        <!-- Header -->
+        <div class="mb-12">
+            <div class="flex items-center gap-4 mb-4">
+                <span class="text-4xl">@_category?.Icon</span>
+                <h1 class="text-3xl md:text-4xl font-bold">@_category?.Name</h1>
+            </div>
+            <p class="text-muted-foreground">@_products.Count products found</p>
+        </div>
+
+        <!-- Filters & Sort -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-muted-foreground">Sort by:</span>
+                <select @bind="_sortBy" class="h-10 px-4 rounded-lg bg-secondary border-0 focus:ring-2 focus:ring-primary outline-none">
+                    <option value="featured">Featured</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="rating">Top Rated</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2">
+                <button @onclick="() => _viewMode = ViewMode.Grid" 
+                        class="@GetViewButtonClass(ViewMode.Grid)">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                </button>
+                <button @onclick="() => _viewMode = ViewMode.List" 
+                        class="@GetViewButtonClass(ViewMode.List)">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        @if (_products.Any())
+        {
+            <div class="@GetGridClass()">
+                @{ var index = 0; }
+                @foreach (var product in GetSortedProducts())
+                {
+                    <ProductCard Product="product" Index="index" />
+                    index++;
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-20">
+                <svg class="w-24 h-24 mx-auto text-muted-foreground/30 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 2a10 10 0 110 20 10 10 0 010-20z" />
+                </svg>
+                <p class="text-xl text-muted-foreground mb-4">No products found in this category</p>
+                <a href="/" class="btn btn-primary btn-md rounded-xl">
+                    Back to Home
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<Footer />
+
+@code {
+    [Parameter]
+    public string CategoryId { get; set; } = string.Empty;
+
+    private Category? _category;
+    private List<Product> _products = new();
+    private string _sortBy = "featured";
+    private ViewMode _viewMode = ViewMode.Grid;
+    private bool _isLoading = true;
+    private string? _error;
+
+    private enum ViewMode { Grid, List }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _isLoading = true;
+        _error = null;
+        
+        try
+        {
+            _category = await ApiService.GetCategoryAsync(CategoryId);
+            _products = await ApiService.GetProductsByCategoryAsync(CategoryId);
+            
+            if (_category == null)
+            {
+                _error = "Category not found. Please ensure the backend server is running.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load data. Error: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private List<Product> GetSortedProducts()
+    {
+        return _sortBy switch
+        {
+            "price-low" => _products.OrderBy(p => p.Price).ToList(),
+            "price-high" => _products.OrderByDescending(p => p.Price).ToList(),
+            "rating" => _products.OrderByDescending(p => p.Rating).ToList(),
+            _ => _products
+        };
+    }
+
+    private string GetGridClass()
+    {
+        return _viewMode == ViewMode.Grid 
+            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            : "grid grid-cols-1 gap-4";
+    }
+
+    private string GetViewButtonClass(ViewMode mode)
+    {
+        return _viewMode == mode 
+            ? "btn btn-primary btn-icon rounded-lg"
+            : "btn btn-ghost btn-icon rounded-lg";
+    }
+}

@@ -66,3 +66,4 @@ D:\Downloads\neon-gadget-store-main (1)\neon-gadget-store-main\backend\NeonGadge
 D:\Downloads\neon-gadget-store-main (1)\neon-gadget-store-main\backend\NeonGadgetStore.Api\obj\Debug\net8.0\NeonGadgetStore.Api.genruntimeconfig.cache
 D:\Downloads\neon-gadget-store-main (1)\neon-gadget-store-main\backend\NeonGadgetStore.Api\obj\Debug\net8.0\ref\NeonGadgetStore.Api.dll
 D:\Downloads\neon-gadget-store-main (1)\neon-gadget-store-main\backend\NeonGadgetStore.Api\bin\Debug\net8.0\NeonGadgetStore.Api.staticwebassets.runtime.json
+D:\Downloads\neon-gadget-store-main (1)\neon-gadget-store-main\backend\NeonGadgetStore.Api\obj\Debug\net8.0\NeonGadgetStore.Api.sourcelink.json

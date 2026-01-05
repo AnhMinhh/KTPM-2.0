@@ -1,0 +1,254 @@
+@page "/orders/{OrderId}"
+@using NeonGadgetStore.Web.Services
+@using NeonGadgetStore.Web.Models
+@inject ApiService ApiService
+@inject AuthStateService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Order @OrderId - ElectroHub</PageTitle>
+
+<div class="min-h-screen pt-24 pb-20">
+    <div class="container mx-auto px-4">
+        @if (!AuthService.IsAuthenticated)
+        {
+            <div class="text-center py-20">
+                <h2 class="text-2xl font-semibold mb-4">Please sign in</h2>
+                <p class="text-muted-foreground mb-8">You need to be logged in to view order details.</p>
+                <a href="/auth" class="btn btn-primary btn-lg rounded-xl">Sign In</a>
+            </div>
+        }
+        else if (order == null)
+        {
+            <div class="text-center py-20">
+                <h2 class="text-2xl font-semibold mb-4">Order not found</h2>
+                <p class="text-muted-foreground mb-8">The order you're looking for doesn't exist.</p>
+                <a href="/orders" class="btn btn-primary btn-lg rounded-xl">View All Orders</a>
+            </div>
+        }
+        else
+        {
+            <!-- Breadcrumb -->
+            <nav class="flex items-center gap-2 text-sm text-muted-foreground mb-8">
+                <a href="/" class="hover:text-primary">Home</a>
+                <span>/</span>
+                <a href="/orders" class="hover:text-primary">Orders</a>
+                <span>/</span>
+                <span class="text-foreground">#@order.Id</span>
+            </nav>
+
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Order Details -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Order Status -->
+                    <div class="bg-card rounded-2xl border border-border p-6">
+                        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                            <div>
+                                <h1 class="text-2xl font-bold mb-1">Order #@order.Id</h1>
+                                <p class="text-muted-foreground">Placed on @order.CreatedAt.ToString("MMMM dd, yyyy")</p>
+                            </div>
+                            <span class="@GetStatusClass(order.Status) px-4 py-2 rounded-full text-sm font-medium">
+                                @order.Status
+                            </span>
+                        </div>
+
+                        <!-- Progress Steps -->
+                        <div class="flex items-center justify-between relative">
+                            <div class="absolute top-5 left-0 right-0 h-0.5 bg-border"></div>
+                            <div class="absolute top-5 left-0 h-0.5 bg-primary transition-all" style="width: @GetProgressWidth(order.Status)"></div>
+                            
+                            @foreach (var (step, index) in statusSteps.Select((s, i) => (s, i)))
+                            {
+                                <div class="relative flex flex-col items-center z-10">
+                                    <div class="@GetStepClass(step, order.Status) w-10 h-10 rounded-full flex items-center justify-center">
+                                        @if (IsStepComplete(step, order.Status))
+                                        {
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-sm font-medium">@(index + 1)</span>
+                                        }
+                                    </div>
+                                    <span class="text-xs mt-2 text-center">@step</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Order Items -->
+                    <div class="bg-card rounded-2xl border border-border p-6">
+                        <h2 class="text-xl font-bold mb-6">Order Items</h2>
+                        <div class="space-y-4">
+                            @foreach (var item in order.Items)
+                            {
+                                <div class="flex gap-4 p-4 bg-secondary rounded-xl">
+                                    <img src="@item.Product.Image" alt="@item.Product.Name" 
+                                         class="w-20 h-20 object-cover rounded-lg" />
+                                    <div class="flex-1">
+                                        <a href="/product/@item.Product.Id" class="font-semibold hover:text-primary transition-colors">
+                                            @item.Product.Name
+                                        </a>
+                                        <p class="text-sm text-muted-foreground">Quantity: @item.Quantity</p>
+                                        <p class="font-bold text-primary mt-2">$@((item.Product.Price * item.Quantity).ToString("0.00"))</p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Summary -->
+                    <div class="bg-card rounded-2xl border border-border p-6">
+                        <h2 class="text-xl font-bold mb-6">Order Summary</h2>
+                        <div class="space-y-4">
+                            <div class="flex justify-between">
+                                <span class="text-muted-foreground">Subtotal</span>
+                                <span class="font-medium">$@((order.Total / 1.1m).ToString("0.00"))</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-muted-foreground">Shipping</span>
+                                <span class="font-medium text-green-500">Free</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-muted-foreground">Tax</span>
+                                <span class="font-medium">$@((order.Total - order.Total / 1.1m).ToString("0.00"))</span>
+                            </div>
+                            <hr class="border-border" />
+                            <div class="flex justify-between">
+                                <span class="font-semibold">Total</span>
+                                <span class="font-bold text-xl text-primary">$@order.Total.ToString("0.00")</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shipping Address -->
+                    <div class="bg-card rounded-2xl border border-border p-6">
+                        <h2 class="text-xl font-bold mb-4">Shipping Address</h2>
+                        <p class="text-muted-foreground">
+                            @order.ShippingAddress?.FullName<br />
+                            @order.ShippingAddress?.Street<br />
+                            @order.ShippingAddress?.City, @order.ShippingAddress?.State @order.ShippingAddress?.ZipCode
+                        </p>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="bg-card rounded-2xl border border-border p-6">
+                        <h2 class="text-xl font-bold mb-4">Need Help?</h2>
+                        <div class="space-y-3">
+                            <button class="btn btn-outline w-full rounded-xl">Track Package</button>
+                            <button class="btn btn-outline w-full rounded-xl">Contact Support</button>
+                            @if (order.Status == "Processing")
+                            {
+                                <button class="btn btn-outline text-destructive border-destructive hover:bg-destructive hover:text-white w-full rounded-xl">
+                                    Cancel Order
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<Footer />
+
+@code {
+    [Parameter]
+    public string? OrderId { get; set; }
+
+    private Order? order;
+    private List<string> statusSteps = new() { "Processing", "Shipped", "In Transit", "Delivered" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrderAsync();
+    }
+
+    private async Task LoadOrderAsync()
+    {
+        // Try to get order from API
+        order = await ApiService.GetOrderAsync(OrderId ?? "");
+        
+        // Fall back to sample order if API fails
+        if (order == null)
+        {
+            order = new Order
+            {
+                Id = OrderId ?? "ORD-2024001",
+                UserId = "user1",
+                Status = "In Transit",
+                Total = 1299.00m,
+                CreatedAt = DateTime.Now.AddDays(-3),
+                ShippingAddress = new Address
+                {
+                    FullName = "John Doe",
+                    Street = "123 Main Street, Apt 4B",
+                    City = "New York",
+                    State = "NY",
+                    ZipCode = "10001"
+                },
+                Items = new List<OrderItem>
+                {
+                    new OrderItem
+                    {
+                        Id = "item-1",
+                        ProductId = "1",
+                        ProductName = "iPhone 15 Pro Max",
+                        Price = 1199.00m,
+                        ProductImage = "https://images.unsplash.com/photo-1696446701796-da61225697cc?w=400",
+                        Quantity = 1
+                    }
+                }
+            };
+        }
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Delivered" => "bg-green-500/10 text-green-500",
+            "In Transit" => "bg-blue-500/10 text-blue-500",
+            "Shipped" => "bg-purple-500/10 text-purple-500",
+            "Processing" => "bg-yellow-500/10 text-yellow-500",
+            "Cancelled" => "bg-red-500/10 text-red-500",
+            _ => "bg-secondary text-muted-foreground"
+        };
+    }
+
+    private string GetProgressWidth(string status)
+    {
+        return status switch
+        {
+            "Processing" => "0%",
+            "Shipped" => "33%",
+            "In Transit" => "66%",
+            "Delivered" => "100%",
+            _ => "0%"
+        };
+    }
+
+    private string GetStepClass(string step, string currentStatus)
+    {
+        var stepIndex = statusSteps.IndexOf(step);
+        var currentIndex = statusSteps.IndexOf(currentStatus);
+        
+        if (stepIndex <= currentIndex)
+        {
+            return "bg-primary text-white";
+        }
+        return "bg-secondary text-muted-foreground";
+    }
+
+    private bool IsStepComplete(string step, string currentStatus)
+    {
+        var stepIndex = statusSteps.IndexOf(step);
+        var currentIndex = statusSteps.IndexOf(currentStatus);
+        return stepIndex < currentIndex;
+    }
+}

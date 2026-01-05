@@ -1,0 +1,32 @@
+@inject Microsoft.JSInterop.IJSRuntime JS
+
+@if (_showButton)
+{
+    <button @onclick="ScrollToTop" 
+            class="fixed bottom-6 right-6 z-40 btn btn-primary btn-icon rounded-full shadow-lg animate-fade-up"
+            title="Back to top">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </svg>
+    </button>
+}
+
+@code {
+    private bool _showButton = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // We could add JS interop for scroll detection, for now just show the button
+            await Task.Delay(2000);
+            _showButton = true;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ScrollToTop()
+    {
+        await JS.InvokeVoidAsync("eval", "window.scrollTo({ top: 0, behavior: 'smooth' })");
+    }
+}

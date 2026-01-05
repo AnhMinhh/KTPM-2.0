@@ -1,0 +1,159 @@
+@inject NavigationManager Navigation
+
+<section class="relative min-h-screen flex items-center pt-20 overflow-hidden">
+    <!-- Background Gradient -->
+    <div class="absolute inset-0 gradient-hero"></div>
+    
+    <!-- Animated Background Circles -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-primary/5 blur-3xl animate-pulse-glow"></div>
+        <div class="absolute bottom-1/4 -right-20 w-96 h-96 rounded-full bg-accent/5 blur-3xl animate-pulse-glow" style="animation-delay: 1s"></div>
+    </div>
+
+    <div class="container mx-auto px-4 relative z-10">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <!-- Content -->
+            <div class="text-center lg:text-left">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6 animate-fade-up">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/>
+                    </svg>
+                    <span class="text-sm font-medium">New Arrivals 2024</span>
+                </div>
+                
+                <h1 class="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight mb-6 @GetAnimationClass()">
+                    <span class="text-gradient-primary">@_currentProduct.Name</span>
+                    <br />
+                    <span class="text-foreground">@_currentProduct.Subtitle</span>
+                </h1>
+                
+                <p class="text-lg md:text-xl text-muted-foreground max-w-lg mx-auto lg:mx-0 mb-8 animate-fade-up stagger-2">
+                    Discover the latest in cutting-edge technology. Premium devices designed for the extraordinary.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-up stagger-3">
+                    <a href="/product/@_currentProduct.Id" class="btn btn-hero rounded-xl group">
+                        Shop Now
+                        <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </a>
+                    <a href="/category/phones" class="btn btn-outline btn-xl rounded-xl">
+                        Explore All
+                    </a>
+                </div>
+
+                <!-- Slide Indicators -->
+                <div class="flex gap-3 justify-center lg:justify-start mt-12">
+                    @for (int i = 0; i < _heroProducts.Length; i++)
+                    {
+                        var index = i;
+                        <button @onclick="() => ChangeSlide(index)"
+                                class="@GetIndicatorClass(index)">
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Product Image -->
+            <div class="relative">
+                <div class="relative z-10 @GetImageAnimationClass()">
+                    <img src="@_currentProduct.Image" alt="@_currentProduct.Name"
+                         class="w-full max-w-lg mx-auto rounded-3xl shadow-2xl animate-float" />
+                    
+                    <!-- Floating Elements -->
+                    <div class="absolute -top-4 -right-4 w-20 h-20 rounded-2xl gradient-primary shadow-glow flex items-center justify-center animate-float" style="animation-delay: 0.5s">
+                        <span class="text-primary-foreground font-bold text-lg">NEW</span>
+                    </div>
+                    
+                    <div class="absolute -bottom-4 -left-4 px-6 py-4 rounded-2xl bg-card shadow-card animate-float" style="animation-delay: 1s">
+                        <p class="text-sm text-muted-foreground">Starting from</p>
+                        <p class="text-2xl font-bold text-primary">$899</p>
+                    </div>
+                </div>
+
+                <!-- Decorative Ring -->
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-[120%] h-[120%] rounded-full border border-primary/10 animate-pulse-glow"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private record HeroProduct(string Id, string Name, string Subtitle, string Image);
+    
+    private readonly HeroProduct[] _heroProducts = new[]
+    {
+        new HeroProduct("phone-1", "ProMax Ultra 15", "The future is here", "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=800&q=80"),
+        new HeroProduct("laptop-1", "MacBook Pro M4", "Supercharged performance", "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&q=80"),
+        new HeroProduct("audio-1", "AirPods Pro Max", "Immersive sound", "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80")
+    };
+
+    private int _currentSlide = 0;
+    private bool _isAnimating = false;
+    private HeroProduct _currentProduct => _heroProducts[_currentSlide];
+    private System.Threading.Timer? _timer;
+
+    protected override void OnInitialized()
+    {
+        _timer = new System.Threading.Timer(async _ =>
+        {
+            await InvokeAsync(() =>
+            {
+                _isAnimating = true;
+                StateHasChanged();
+            });
+            
+            await Task.Delay(500);
+            
+            await InvokeAsync(() =>
+            {
+                _currentSlide = (_currentSlide + 1) % _heroProducts.Length;
+                _isAnimating = false;
+                StateHasChanged();
+            });
+        }, null, 5000, 5000);
+    }
+
+    private async Task ChangeSlide(int index)
+    {
+        if (index == _currentSlide) return;
+        
+        _isAnimating = true;
+        StateHasChanged();
+        
+        await Task.Delay(500);
+        
+        _currentSlide = index;
+        _isAnimating = false;
+        StateHasChanged();
+    }
+
+    private string GetAnimationClass()
+    {
+        return _isAnimating 
+            ? "transition-all duration-500 opacity-0 translate-y-4" 
+            : "transition-all duration-500 opacity-100 translate-y-0";
+    }
+
+    private string GetImageAnimationClass()
+    {
+        return _isAnimating 
+            ? "transition-all duration-700 opacity-0 scale-95" 
+            : "transition-all duration-700 opacity-100 scale-100";
+    }
+
+    private string GetIndicatorClass(int index)
+    {
+        return index == _currentSlide 
+            ? "h-2 w-8 rounded-full gradient-primary transition-all duration-300" 
+            : "h-2 w-2 rounded-full bg-foreground/20 hover:bg-foreground/40 transition-all duration-300";
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+    }
+}

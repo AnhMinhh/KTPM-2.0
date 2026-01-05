@@ -1,0 +1,26 @@
+@inherits LayoutComponentBase
+@using NeonGadgetStore.Web.Components
+@using NeonGadgetStore.Web.Services
+@inject AuthStateService AuthService
+@inject ApiService ApiService
+
+<div class="min-h-screen bg-background">
+    <Navbar />
+    <CartDrawer />
+    
+    <main>
+        @Body
+    </main>
+    
+    <FloatingChatButton />
+    <BackToTop />
+    <ToastContainer />
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        AuthService.SetApiService(ApiService);
+        await AuthService.InitializeAsync();
+    }
+}

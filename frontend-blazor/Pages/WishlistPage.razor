@@ -1,0 +1,120 @@
+@page "/wishlist"
+@using NeonGadgetStore.Web.Models
+@using NeonGadgetStore.Web.Services
+@inject ApiService ApiService
+@inject AuthStateService AuthService
+@inject CartService CartService
+@inject ToastService ToastService
+@inject NavigationManager Navigation
+
+<PageTitle>Wishlist - ElectroHub</PageTitle>
+
+<div class="min-h-screen pt-24 pb-20">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl md:text-4xl font-bold mb-8">My Wishlist</h1>
+
+        @if (!wishlistItems.Any())
+        {
+            <div class="text-center py-20">
+                <svg class="w-32 h-32 mx-auto text-muted-foreground/30 mb-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                <h2 class="text-2xl font-semibold mb-4">Your wishlist is empty</h2>
+                <p class="text-muted-foreground mb-8">Save items you love for later.</p>
+                <a href="/" class="btn btn-primary btn-lg rounded-xl">
+                    Start Shopping
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                @foreach (var product in wishlistItems)
+                {
+                    <div class="group bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/50 hover:shadow-lg transition-all duration-300">
+                        <div class="relative aspect-square overflow-hidden">
+                            <img src="@product.Image" alt="@product.Name" 
+                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                            <button @onclick="() => RemoveFromWishlist(product.Id)"
+                                    class="absolute top-3 right-3 w-10 h-10 rounded-full bg-background/90 flex items-center justify-center text-destructive hover:bg-destructive hover:text-white transition-colors">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                            </button>
+                            @if (product.OriginalPrice.HasValue && product.OriginalPrice > product.Price)
+                            {
+                                var discount = (int)((1 - product.Price / product.OriginalPrice.Value) * 100);
+                                <span class="absolute top-3 left-3 bg-destructive text-white text-xs font-bold px-2 py-1 rounded-lg">
+                                    -@discount%
+                                </span>
+                            }
+                        </div>
+                        <div class="p-4">
+                            <a href="/product/@product.Id" class="font-semibold line-clamp-2 hover:text-primary transition-colors mb-2">
+                                @product.Name
+                            </a>
+                            <div class="flex items-center gap-1 mb-2">
+                                <div class="flex text-yellow-500">
+                                    @for (int i = 0; i < 5; i++)
+                                    {
+                                        <svg class="w-4 h-4 @(i < (int)product.Rating ? "fill-current" : "stroke-current fill-none")" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                        </svg>
+                                    }
+                                </div>
+                                <span class="text-xs text-muted-foreground">(@product.Reviews)</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-xl font-bold text-primary">$@product.Price.ToString("0.00")</span>
+                                    @if (product.OriginalPrice.HasValue && product.OriginalPrice > product.Price)
+                                    {
+                                        <span class="text-sm text-muted-foreground line-through ml-2">$@product.OriginalPrice.Value.ToString("0.00")</span>
+                                    }
+                                </div>
+                            </div>
+                            <button @onclick="() => AddToCart(product)"
+                                    class="btn btn-primary w-full mt-4 rounded-xl">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<Footer />
+
+@code {
+    private List<Product> wishlistItems = new();
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadWishlistAsync();
+    }
+
+    private async Task LoadWishlistAsync()
+    {
+        _isLoading = true;
+        
+        // Load from API only (no fallback)
+        wishlistItems = await ApiService.GetWishlistAsync();
+        
+        _isLoading = false;
+    }
+
+    private void RemoveFromWishlist(string productId)
+    {
+        wishlistItems = wishlistItems.Where(p => p.Id != productId).ToList();
+        ToastService.ShowInfo("Removed from wishlist");
+    }
+
+    private async Task AddToCart(Product product)
+    {
+        await CartService.AddToCartAsync(product);
+        ToastService.ShowSuccess($"{product.Name} added to cart!");
+    }
+}
