@@ -30,11 +30,24 @@ builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
         options.User.RequireUniqueEmail = true;
+        
+        // Relax password requirements to allow any password
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequiredLength = 1;
+        options.Password.RequiredUniqueChars = 0;
     })
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<JwtTokenService>();
+
+// Thêm các Service mới theo báo cáo
+builder.Services.AddScoped<IPermissionService, PermissionService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<ICartService, CartService>();
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

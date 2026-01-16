@@ -18,6 +18,14 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<WishlistEntry> Wishlist => Set<WishlistEntry>();
     public DbSet<ViewedEntry> ViewedHistory => Set<ViewedEntry>();
+    
+    // Thêm DbSet mới theo báo cáo
+    public DbSet<Permission> Permissions => Set<Permission>();
+    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+    public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<ShoppingCart> ShoppingCarts => Set<ShoppingCart>();
+    public DbSet<CartItem> CartItems => Set<CartItem>();
+    public DbSet<Review> Reviews => Set<Review>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -60,5 +68,34 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<ViewedEntry>()
             .HasIndex(v => new { v.UserId, v.ProductId })
             .IsUnique();
+
+        // Cấu hình cho Permission
+        builder.Entity<Permission>()
+            .HasIndex(p => p.PermissionModule);
+
+        // Cấu hình cho RolePermission
+        builder.Entity<RolePermission>()
+            .HasKey(rp => new { rp.RoleId, rp.PermissionId });
+
+        // Cấu hình cho Payment
+        builder.Entity<Payment>()
+            .HasIndex(p => p.PaymentStatus);
+
+        // Cấu hình cho ShoppingCart
+        builder.Entity<ShoppingCart>()
+            .HasMany(sc => sc.CartItems)
+            .WithOne(ci => ci.Cart)
+            .HasForeignKey(ci => ci.CartId);
+
+        // Cấu hình cho CartItem
+        builder.Entity<CartItem>()
+            .HasIndex(ci => new { ci.CartId, ci.ProductId })
+            .IsUnique();
+
+        // Cấu hình cho Review
+        builder.Entity<Review>()
+            .HasIndex(r => r.ProductId);
+        builder.Entity<Review>()
+            .HasIndex(r => r.UserId);
     }
 }

@@ -12,7 +12,7 @@ namespace NeonGadgetStore.Api.Controllers;
 
 [ApiController]
 [Route("api/admin/orders")]
-[Authorize(Roles = "admin")]
+[Authorize(Roles = "Admin")]
 public class AdminOrdersController : ControllerBase
 {
     private readonly AppDbContext _db;

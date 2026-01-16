@@ -1,0 +1,371 @@
+@page "/admin/products"
+@using NeonGadgetStore.Web.Services
+@using NeonGadgetStore.Web.Models
+@inject AuthStateService AuthService
+@inject ApiService ApiService
+@inject ToastService ToastService
+@inject NavigationManager Navigation
+
+<PageTitle>Admin Products - ElectroHub</PageTitle>
+
+<div class="min-h-screen pt-24 pb-20">
+    <div class="container mx-auto px-4">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold">Manage Products</h1>
+            <button @onclick="OpenAddModal" class="btn btn-primary rounded-xl">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Add Product
+            </button>
+        </div>
+
+        <!-- Products Table -->
+        @if (isLoading)
+        {
+            <div class="flex justify-center items-center h-64">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-primary"></div>
+            </div>
+        }
+        else if (products.Any())
+        {
+            <div class="bg-card rounded-2xl border border-border overflow-hidden shadow-lg">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-border bg-secondary/50">
+                                <th class="px-6 py-4 text-left text-sm font-semibold">Product Name</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold">Category</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold">Price</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold">Stock</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold">Status</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var product in products)
+                            {
+                                <tr class="border-b border-border hover:bg-secondary/50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            @if (product.Images != null && product.Images.Count > 0)
+                                            {
+                                                <img src="@product.Images[0]" alt="@product.Name" class="w-12 h-12 rounded-lg object-cover" />
+                                            }
+                                            <span class="font-medium">@product.Name</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-muted-foreground">@product.CategoryId</td>
+                                    <td class="px-6 py-4 font-semibold">$@product.Price</td>
+                                    <td class="px-6 py-4">
+                                        <span class="@GetStockClass(product.StockQuantity)">
+                                            @product.StockQuantity units
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="@(product.IsActive ? "badge badge-success" : "badge badge-secondary")">
+                                            @(product.IsActive ? "Active" : "Inactive")
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <button @onclick="() => OpenEditModal(product)" class="btn btn-sm btn-ghost">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </button>
+                                            <button @onclick="() => OpenDeleteModal(product)" class="btn btn-sm btn-ghost text-red-500">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="bg-card rounded-2xl border border-border p-12 text-center">
+                <p class="text-muted-foreground mb-4">No products found</p>
+                <button @onclick="OpenAddModal" class="btn btn-primary rounded-xl">
+                    Add First Product
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="@(showModal ? "fixed" : "hidden") inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-card rounded-2xl border border-border p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <h2 class="text-2xl font-bold mb-6">@(editingProduct != null ? "Edit Product" : "Add New Product")</h2>
+
+        <form @onsubmit="SaveProduct" @onsubmit:preventDefault>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Product Name *</label>
+                    <input type="text" 
+                           @bind="formProduct.Name"
+                           placeholder="Enter product name"
+                           class="w-full px-4 py-3 rounded-xl bg-secondary border border-border focus:ring-2 focus:ring-primary outline-none" />
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Price *</label>
+                        <input type="number" 
+                               @bind="formProduct.Price"
+                               placeholder="0.00"
+                               step="0.01"
+                               class="w-full px-4 py-3 rounded-xl bg-secondary border border-border focus:ring-2 focus:ring-primary outline-none" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Original Price</label>
+                        <input type="number" 
+                               @bind="formProduct.OriginalPrice"
+                               placeholder="0.00"
+                               step="0.01"
+                               class="w-full px-4 py-3 rounded-xl bg-secondary border border-border focus:ring-2 focus:ring-primary outline-none" />
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Stock Quantity *</label>
+                        <input type="number" 
+                               @bind="formProduct.StockQuantity"
+                               placeholder="0"
+                               class="w-full px-4 py-3 rounded-xl bg-secondary border border-border focus:ring-2 focus:ring-primary outline-none" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Category ID *</label>
+                        <input type="text" 
+                               @bind="formProduct.CategoryId"
+                               placeholder="cat-laptops"
+                               class="w-full px-4 py-3 rounded-xl bg-secondary border border-border focus:ring-2 focus:ring-primary outline-none" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Description</label>
+                    <textarea @bind="formProduct.Description"
+                              placeholder="Product description"
+                              rows="4"
+                              class="w-full px-4 py-3 rounded-xl bg-secondary border border-border focus:ring-2 focus:ring-primary outline-none"></textarea>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" @bind="formProduct.IsActive" class="w-4 h-4" />
+                        <span class="text-sm font-medium">Active</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" @bind="formProduct.IsFeatured" class="w-4 h-4" />
+                        <span class="text-sm font-medium">Featured</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex gap-4 mt-8">
+                <button type="submit" class="btn btn-primary rounded-xl flex-1">
+                    @(editingProduct != null ? "Update" : "Add") Product
+                </button>
+                <button type="button" @onclick="CloseModal" class="btn btn-ghost rounded-xl flex-1">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="@(showDeleteModal ? "fixed" : "hidden") inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-card rounded-2xl border border-border p-8 max-w-md w-full">
+        <h3 class="text-xl font-bold mb-4">Delete Product</h3>
+        <p class="text-muted-foreground mb-6">
+            Are you sure you want to delete <span class="font-semibold">@deleteProduct?.Name</span>? This action cannot be undone.
+        </p>
+        <div class="flex gap-4">
+            <button @onclick="ConfirmDelete" class="btn btn-danger rounded-xl flex-1">
+                Delete
+            </button>
+            <button @onclick="CloseDeleteModal" class="btn btn-ghost rounded-xl flex-1">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<ProductDto> products = new();
+    private ProductDto formProduct = new();
+    private ProductDto? editingProduct = null;
+    private ProductDto? deleteProduct = null;
+    private bool showModal = false;
+    private bool showDeleteModal = false;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Kiểm tra xem user có phải admin không
+        if (!AuthService.IsAdmin)
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
+        isLoading = true;
+        try
+        {
+            var response = await ApiService.GetProductsAsync();
+            products = response?.Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Slug = p.Slug,
+                Price = p.Price,
+                OriginalPrice = p.OriginalPrice,
+                StockQuantity = p.StockQuantity,
+                IsActive = p.IsActive,
+                IsFeatured = p.IsFeatured,
+                Images = p.Images,
+                CategoryId = p.CategoryId,
+                Description = p.Description
+            }).ToList() ?? new List<ProductDto>();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error loading products: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OpenAddModal()
+    {
+        editingProduct = null;
+        formProduct = new ProductDto();
+        showModal = true;
+    }
+
+    private void OpenEditModal(ProductDto product)
+    {
+        editingProduct = product;
+        formProduct = new ProductDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Price = product.Price,
+            OriginalPrice = product.OriginalPrice,
+            StockQuantity = product.StockQuantity,
+            CategoryId = product.CategoryId,
+            Description = product.Description,
+            IsActive = product.IsActive,
+            IsFeatured = product.IsFeatured,
+            Images = product.Images
+        };
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        editingProduct = null;
+        formProduct = new ProductDto();
+    }
+
+    private void OpenDeleteModal(ProductDto product)
+    {
+        deleteProduct = product;
+        showDeleteModal = true;
+    }
+
+    private void CloseDeleteModal()
+    {
+        showDeleteModal = false;
+        deleteProduct = null;
+    }
+
+    private async Task SaveProduct()
+    {
+        if (string.IsNullOrEmpty(formProduct.Name))
+        {
+            ToastService.ShowError("Product name is required");
+            return;
+        }
+
+        try
+        {
+            if (editingProduct != null)
+            {
+                // Update existing product
+                await ApiService.UpdateProductAsync(formProduct.Id, formProduct);
+                ToastService.ShowSuccess("Product updated successfully");
+            }
+            else
+            {
+                // Add new product
+                await ApiService.CreateProductAsync(formProduct);
+                ToastService.ShowSuccess("Product added successfully");
+            }
+
+            CloseModal();
+            await LoadProducts();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error saving product: {ex.Message}");
+        }
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (deleteProduct == null) return;
+
+        try
+        {
+            await ApiService.DeleteProductAsync(deleteProduct.Id);
+            ToastService.ShowSuccess("Product deleted successfully");
+            CloseDeleteModal();
+            await LoadProducts();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error deleting product: {ex.Message}");
+        }
+    }
+
+    private string GetStockClass(int stock)
+    {
+        if (stock <= 0) return "text-red-500 font-semibold";
+        if (stock <= 10) return "text-yellow-500 font-semibold";
+        return "text-green-500 font-semibold";
+    }
+
+    public class ProductDto
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Name { get; set; } = string.Empty;
+        public string? Slug { get; set; }
+        public decimal Price { get; set; }
+        public decimal? OriginalPrice { get; set; }
+        public int StockQuantity { get; set; }
+        public bool IsActive { get; set; } = true;
+        public bool IsFeatured { get; set; }
+        public List<string>? Images { get; set; } = new();
+        public string? CategoryId { get; set; }
+        public string? Description { get; set; }
+    }}

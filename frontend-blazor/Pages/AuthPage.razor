@@ -216,9 +216,11 @@
             }
             else
             {
-                errorMessage = isLogin 
+                // Use specific error from AuthService if available
+                string specificError = AuthService.LastError ?? (isLogin 
                     ? "Invalid email or password. Please try again." 
-                    : "Failed to create account. Please try again.";
+                    : "Failed to create account. Please try again.");
+                errorMessage = specificError;
             }
         }
         catch (Exception ex)

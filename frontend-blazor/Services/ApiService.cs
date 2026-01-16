@@ -414,4 +414,96 @@ public class ApiService
             return false;
         }
     }
+
+    // Admin - Products
+    public async Task<bool> CreateProductAsync(object product)
+    {
+        try
+        {
+            SetAuthHeader();
+            var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/admin/products", product);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating product: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> UpdateProductAsync(string id, object product)
+    {
+        try
+        {
+            SetAuthHeader();
+            var response = await _httpClient.PutAsJsonAsync($"{BaseUrl}/admin/products/{id}", product);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating product: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> DeleteProductAsync(string id)
+    {
+        try
+        {
+            SetAuthHeader();
+            var response = await _httpClient.DeleteAsync($"{BaseUrl}/admin/products/{id}");
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting product: {ex.Message}");
+            return false;
+        }
+    }
+
+    // Admin - Categories
+    public async Task<bool> CreateCategoryAsync(object category)
+    {
+        try
+        {
+            SetAuthHeader();
+            var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/admin/categories", category);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating category: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> UpdateCategoryAsync(string id, object category)
+    {
+        try
+        {
+            SetAuthHeader();
+            var response = await _httpClient.PutAsJsonAsync($"{BaseUrl}/admin/categories/{id}", category);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating category: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> DeleteCategoryAsync(string id)
+    {
+        try
+        {
+            SetAuthHeader();
+            var response = await _httpClient.DeleteAsync($"{BaseUrl}/admin/categories/{id}");
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting category: {ex.Message}");
+            return false;
+        }
+    }
 }

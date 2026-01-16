@@ -15,6 +15,7 @@ public class AuthStateService
     public bool IsAuthenticated => CurrentUser != null;
     public string? Token { get; private set; }
     public bool IsLoading { get; private set; } = true;
+    public string? LastError { get; private set; }
 
     public event Action? OnChange;
 
@@ -49,7 +50,7 @@ public class AuthStateService
                         Profile = meResponse.Profile,
                         Roles = meResponse.Roles ?? new List<string>()
                     };
-                    IsAdmin = meResponse.Roles?.Contains("admin") ?? false;
+                    IsAdmin = meResponse.Roles?.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)) ?? false;
                 }
                 else
                 {
@@ -84,7 +85,7 @@ public class AuthStateService
                     Profile = response.Profile,
                     Roles = response.Roles ?? new List<string>()
                 };
-                IsAdmin = response.Roles?.Contains("admin") ?? false;
+                IsAdmin = response.Roles?.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)) ?? false;
                 
                 await _localStorage.SetItemAsync(TokenKey, Token);
                 NotifyStateChanged();
@@ -122,18 +123,21 @@ public class AuthStateService
                     Profile = response.Profile,
                     Roles = response.Roles ?? new List<string>()
                 };
-                IsAdmin = response.Roles?.Contains("admin") ?? false;
+                IsAdmin = response.Roles?.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)) ?? false;
                 
                 await _localStorage.SetItemAsync(TokenKey, Token);
+                LastError = null;
                 NotifyStateChanged();
                 return true;
             }
             
+            LastError = error;
             Console.WriteLine($"Register error: {error}");
             return false;
         }
         catch (Exception ex)
         {
+            LastError = ex.Message;
             Console.WriteLine($"Register exception: {ex.Message}");
             return false;
         }

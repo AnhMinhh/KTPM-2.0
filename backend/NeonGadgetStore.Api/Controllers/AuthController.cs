@@ -87,12 +87,12 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = string.Join("; ", result.Errors.Select(e => e.Description)) });
         }
 
-        if (!await _roleManager.RoleExistsAsync("user"))
+        if (!await _roleManager.RoleExistsAsync("User"))
         {
-            await _roleManager.CreateAsync(new IdentityRole("user"));
+            await _roleManager.CreateAsync(new IdentityRole("User"));
         }
 
-        await _userManager.AddToRoleAsync(user, "user");
+        await _userManager.AddToRoleAsync(user, "User");
 
         var profile = new Profile
         {
